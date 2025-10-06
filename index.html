@@ -2,12 +2,12 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ours to Keep - Lirik</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ours to Keep - Kendis</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <style>
@@ -15,49 +15,16 @@
             font-family: 'Poppins', sans-serif;
             overflow: hidden;
             color: #e5e7eb; /* gray-200 */
+            /* Gradasi latar belakang yang mirip dengan di foto */
+            background: radial-gradient(circle, rgba(109, 69, 114, 0.8) 0%, rgba(44, 33, 54, 1) 100%);
+            overscroll-behavior: none; /* Mencegah pull-to-refresh */
         }
-        /* Blurred Background */
-        #background-layer {
-            position: fixed;
-            top: -20px; left: -20px; right: -20px; bottom: -20px;
-            background-image: url('https://placehold.co/1920x1080/1e1b2e/a78bfa?text=Ours+to+Keep');
-            background-size: cover;
-            background-position: center;
-            filter: blur(20px) brightness(0.4);
-            z-index: -2;
-        }
-        /* Gradient Overlay */
-        #gradient-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to top, rgba(17, 24, 39, 0.9) 15%, transparent 50%);
-            z-index: -1;
-        }
-        /* Lyrics Container */
-        #lyrics-container {
-            scroll-behavior: smooth;
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none; /* Firefox */
-        }
-        #lyrics-container::-webkit-scrollbar {
-            display: none; /* Chrome, Safari */
-        }
-        /* Individual Lyric Line Style */
-        .lyric-line {
-            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-            opacity: 0.3;
-            transform: scale(0.95);
-            font-weight: 500;
-        }
-        /* Active Lyric Line Style */
-        .lyric-line.active {
-            opacity: 1;
-            transform: scale(1);
-            font-weight: 700;
-            color: #ffffff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-        /* Custom Range Slider */
+        
+        /* Menyembunyikan scrollbar di semua elemen */
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Custom Range Slider (Progress Bar) */
         input[type="range"] {
             -webkit-appearance: none; appearance: none;
             width: 100%; height: 4px; background: rgba(255, 255, 255, 0.2);
@@ -67,79 +34,195 @@
             -webkit-appearance: none; appearance: none;
             width: 14px; height: 14px; background: #fff; border-radius: 50%;
         }
+
+        /* Gaya Lirik */
+        .lyric-line {
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            opacity: 0.4;
+            transform: scale(0.98);
+            font-weight: 600;
+        }
+        .lyric-line.active {
+            opacity: 1;
+            transform: scale(1);
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Transisi untuk View Switching */
+        .view {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-gray-900">
 
-    <div id="background-layer"></div>
-    <div id="gradient-overlay"></div>
+    <!-- Container Utama untuk View Switching -->
+    <div class="relative h-screen w-screen overflow-hidden">
 
-    <div class="h-screen w-screen flex flex-col">
-        <!-- Main Lyrics Viewport -->
-        <main id="lyrics-container" class="flex-grow w-full max-w-4xl mx-auto overflow-y-auto pt-[50vh] pb-[50vh]">
-            <div id="lyrics-list" class="flex flex-col items-center justify-center space-y-6 text-3xl md:text-4xl lg:text-5xl text-center px-4">
-                <!-- Lyrics will be inserted here -->
-            </div>
-        </main>
-        
-        <!-- Bottom Controls -->
-        <footer class="w-full max-w-4xl mx-auto p-4 md:p-6">
-            <div class="flex items-center space-x-4 mb-3">
-                <img src="https://placehold.co/80x80/1e1b2e/a78bfa?text=OK" alt="Album Mini" class="w-14 h-14 rounded-lg shadow-md">
-                <div>
-                    <h2 class="font-bold text-white text-lg">Ours to Keep</h2>
-                    <p class="text-sm text-gray-400">Kendis</p>
+        <!-- Player View (Tampilan Awal) -->
+        <div id="player-view" class="view absolute inset-0 flex flex-col p-6 space-y-6 opacity-100 transform-none">
+            <div class="flex-grow flex flex-col items-center justify-center space-y-8">
+                <img src="https://placehold.co/600x600/2c2136/e5e7eb?text=Ours+to+Keep&font=poppins" alt="Album Art" class="w-full max-w-xs rounded-xl shadow-2xl">
+                
+                <div class="w-full max-w-xs text-left">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h1 class="font-bold text-white text-2xl">Ours to Keep</h1>
+                            <p class="text-md text-gray-300">Kendis</p>
+                        </div>
+                        <div class="flex items-center space-x-4 text-xl text-gray-300">
+                            <i class="far fa-star"></i>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <div class="flex-shrink-0">
+                 <!-- Progress Bar & Waktu -->
+                <div class="space-y-1">
+                    <input type="range" id="progressBar" value="0" min="0">
+                    <div class="flex justify-between text-xs font-mono text-gray-400">
+                        <span id="currentTime">0:00</span>
+                        <span id="totalDuration">-:--</span>
+                    </div>
+                </div>
+
+                <!-- Tombol Kontrol Utama -->
+                <div class="flex items-center justify-around my-4">
+                    <button class="text-gray-300 hover:text-white text-2xl transition-colors"><i class="fas fa-backward-step"></i></button>
+                    <button id="playPauseButton" class="text-white w-20 h-20 rounded-full flex items-center justify-center text-4xl">
+                        <i id="playPauseIcon" class="fas fa-play"></i>
+                    </button>
+                    <button class="text-gray-300 hover:text-white text-2xl transition-colors"><i class="fas fa-forward-step"></i></button>
+                </div>
+                
+                <!-- Tombol Kontrol Sekunder -->
+                <div class="flex items-center justify-around text-xl text-gray-400">
+                     <button id="showLyricsButton" class="hover:text-white transition-colors"><i class="fas fa-comment-alt"></i></button>
+                     <button class="hover:text-white transition-colors"><i class="fas fa-podcast"></i></button>
+                     <button class="hover:text-white transition-colors"><i class="fas fa-list-ul"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lyrics View (Tampilan Lirik) -->
+        <div id="lyrics-view" class="view absolute inset-0 flex flex-col p-6 space-y-4 opacity-0 pointer-events-none transform translate-y-8">
+            <div class="flex-shrink-0 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <img src="https://placehold.co/80x80/2c2136/e5e7eb?text=OK" alt="Album Mini" class="w-12 h-12 rounded-lg shadow-md">
+                    <div>
+                        <h2 class="font-bold text-white text-md">Ours to Keep</h2>
+                        <p class="text-xs text-gray-400">Kendis</p>
+                    </div>
+                </div>
+                <button id="hideLyricsButton" class="text-gray-300 text-2xl"><i class="fas fa-chevron-down"></i></button>
             </div>
             
-            <div class="space-y-2">
-                <input type="range" id="progressBar" value="0" min="0">
-                <div class="flex justify-between text-xs font-mono text-gray-400">
-                    <span id="currentTime">0:00</span>
-                    <span id="totalDuration">0:00</span>
+            <main id="lyrics-list-container" class="flex-grow overflow-y-auto pt-[30vh] pb-[30vh]">
+                <div id="lyrics-list" class="flex flex-col items-center justify-center space-y-8 text-3xl md:text-4xl text-center">
+                    <!-- Lirik akan dimasukkan di sini -->
+                </div>
+            </main>
+            
+            <div class="flex-shrink-0">
+                <input type="range" id="progressBarLyrics" value="0" min="0" class="w-full mt-3">
+                <div class="flex items-center justify-around my-4">
+                    <button class="text-gray-300 hover:text-white text-2xl transition-colors"><i class="fas fa-backward-step"></i></button>
+                    <button id="playPauseButtonLyrics" class="text-white w-20 h-20 rounded-full flex items-center justify-center text-4xl">
+                        <i id="playPauseIconLyrics" class="fas fa-play"></i>
+                    </button>
+                    <button class="text-gray-300 hover:text-white text-2xl transition-colors"><i class="fas fa-forward-step"></i></button>
                 </div>
             </div>
-
-            <div class="flex items-center justify-center mt-2">
-                <button id="playPauseButton" class="text-white text-3xl w-20 h-20 flex items-center justify-center">
-                    <i id="playPauseIcon" class="fas fa-play"></i>
-                </button>
-            </div>
-        </footer>
+        </div>
     </div>
     
     <!-- Hidden YouTube Player -->
     <div id="player" class="hidden"></div>
 
     <script>
-        // --- DOM ELEMENTS ---
+        // --- Referensi Elemen DOM ---
+        const playerView = document.getElementById('player-view');
+        const lyricsView = document.getElementById('lyrics-view');
+        
+        // Tombol di Player View
         const playPauseButton = document.getElementById('playPauseButton');
         const playPauseIcon = document.getElementById('playPauseIcon');
+        const showLyricsButton = document.getElementById('showLyricsButton');
+
+        // Tombol di Lyrics View
+        const playPauseButtonLyrics = document.getElementById('playPauseButtonLyrics');
+        const playPauseIconLyrics = document.getElementById('playPauseIconLyrics');
+        const hideLyricsButton = document.getElementById('hideLyricsButton');
+
+        // Elemen Umum
         const lyricsList = document.getElementById('lyrics-list');
-        const lyricsContainer = document.getElementById('lyrics-container');
+        const lyricsListContainer = document.getElementById('lyrics-list-container');
         const progressBar = document.getElementById('progressBar');
+        const progressBarLyrics = document.getElementById('progressBarLyrics');
         const currentTimeEl = document.getElementById('currentTime');
         const totalDurationEl = document.getElementById('totalDuration');
 
-        // --- STATE ---
+        // --- Variabel State ---
         let player, isPlaying = false, hasStarted = false, currentLyricIndex = -1, syncInterval;
         
+        // --- Lirik Lengkap dengan Timestamp (Diperbarui sesuai permintaan) ---
         const songLyrics = [
-            { text: "Do you ever feel the need to get away from me? (I've been missing you)", time: 2.0 },
-            { text: "Do I bore you? (Voice on the other side)", time: 8.5 },
-            { text: "Or do you want to", time: 12.0 },
-            { text: "Take me from this crowded place to (I've been dreaming of you)", time: 15.5 },
-            { text: "Somewhere we can find some peace (and I can hear you singing)", time: 22.0 },
-            { text: "And the world is ours to keep (through the silent night)", time: 28.0 }
+            { text: "How are you in your time alone?", time: 10.55 },
+            { text: "I'm doing fine, well, I'm not", time: 14.29 },
+            { text: "I feel like I wanna die", time: 17.72 },
+            { text: "I have so much to tell you, love", time: 20.42 },
+            { text: "From the start of the day", time: 25.30 },
+            { text: "'Til the the dawn breaks away", time: 28.29 },
+            { text: "I've been thinking of you", time: 30.91 },
+            { text: "And I've been missing your voice on the other side", time: 35.45 },
+            { text: "And I've been dreaming of you", time: 40.74 },
+            { text: "And I can hear you singing through the silent night", time: 45.90 },
+            { text: "Do you ever feel the need to get away from me?", time: 52.66 },
+            { text: "Do I bore you?", time: 59.08 },
+            { text: "Or do you want to", time: 61.00 },
+            { text: "Take me from this crowded place to", time: 63.42 },
+            { text: "Somewhere we can find some peace", time: 67.41 },
+            { text: "And the world is ours to keep, mm", time: 71.11 },
+            { text: "They don't have to know how we touch", time: 84.86 },
+            { text: "'Cause this feeling's all ours", time: 88.69 },
+            { text: "And they'd become so loud trying to", time: 91.75 },
+            { text: "Fix what was never really broken", time: 95.35 },
+            { text: "And you are my safe haven", time: 99.49 },
+            { text: "I am on your side", time: 101.78 },
+            { text: "Do you ever feel the need to get away from me?", time: 105.77 },
+            { text: "Do I bore you?", time: 112.29 },
+            { text: "Or do you want to", time: 114.50 },
+            { text: "Take me from this crowded place to", time: 116.94 },
+            { text: "Somewhere we can find some peace", time: 120.77 },
+            { text: "And the world is ours to keep, mm", time: 124.18 },
+            { text: "In this world, we are fading away", time: 137.68 },
+            { text: "And I'm not fine", time: 141.93 },
+            { text: "Sometimes, it gets so lonely", time: 143.50 },
+            { text: "And I'm still scared to ask for help", time: 145.58 },
+            { text: "But I'll look at you the same as today", time: 148.31 },
+            { text: "The one that I've been needing", time: 153.16 },
+            { text: "I never thought I'd have", time: 155.50 },
+            { text: "I've been thinking of you", time: 157.78 },
+            { text: "And I've been missing your voice on the other side", time: 162.55 },
+            { text: "Do you ever feel the need to get away from me? (I've been missing you)", time: 168.98 },
+            { text: "Do I bore you? (Voice on the other side)", time: 175.00 },
+            { text: "Or do you want to", time: 177.00 },
+            { text: "Take me from this crowded place to (I've been dreaming of you)", time: 179.00 },
+            { text: "Somewhere we can find some peace (and I can hear you singing)", time: 183.00 },
+            { text: "And the world is ours to keep (through the silent night)", time: 187.00 }
         ];
-        
-        // --- YOUTUBE API SETUP ---
+
+        // --- Inisialisasi YouTube Player API ---
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         const firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        function onYouTubeIframeAPIReady() {
+        window.onYouTubeIframeAPIReady = function() {
             player = new YT.Player('player', {
                 videoId: 'PwrrwedlD0M',
                 playerVars: { 'playsinline': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 'iv_load_policy': 3, 'modestbranding': 1, 'rel': 0, 'showinfo': 0 },
@@ -147,10 +230,11 @@
             });
         }
         
-        function onPlayerReady(event) {
+        function onPlayerReady() {
             populateLyrics();
             const duration = player.getDuration();
             progressBar.max = duration;
+            progressBarLyrics.max = duration;
             totalDurationEl.textContent = formatTime(duration);
         }
         
@@ -166,18 +250,25 @@
             }
         }
         
-        // --- EVENT LISTENERS ---
+        // --- Event Listeners ---
         playPauseButton.addEventListener('click', togglePlayPause);
-        progressBar.addEventListener('input', (e) => player.seekTo(e.target.value, true));
+        playPauseButtonLyrics.addEventListener('click', togglePlayPause);
+        progressBar.addEventListener('input', handleProgressBarChange);
+        progressBarLyrics.addEventListener('input', handleProgressBarChange);
+        showLyricsButton.addEventListener('click', showLyricsView);
+        hideLyricsButton.addEventListener('click', hideLyricsView);
         
-        // --- FUNCTIONS ---
+        // --- Fungsi-fungsi Utama ---
         function togglePlayPause() {
             if (!player) return;
             if (!hasStarted) {
-                player.seekTo(songLyrics[0].time, true);
                 hasStarted = true;
             }
             isPlaying ? player.pauseVideo() : player.playVideo();
+        }
+
+        function handleProgressBarChange(e) {
+            player.seekTo(e.target.value, true);
         }
 
         function populateLyrics() {
@@ -187,15 +278,21 @@
         }
         
         function syncLyricsAndProgress() {
-            if (!player.getCurrentTime) return;
+            if (!player || typeof player.getCurrentTime !== 'function') return;
             const currentTime = player.getCurrentTime();
+            // Update progress bars
             progressBar.value = currentTime;
+            progressBarLyrics.value = currentTime;
+            // Update time display
             currentTimeEl.textContent = formatTime(currentTime);
 
             let newActiveIndex = -1;
             for (let i = 0; i < songLyrics.length; i++) {
-                if (currentTime >= songLyrics[i].time) newActiveIndex = i;
-                else break;
+                if (currentTime >= songLyrics[i].time - 0.5) { 
+                    newActiveIndex = i;
+                } else {
+                    break;
+                }
             }
 
             if (newActiveIndex !== currentLyricIndex) {
@@ -203,18 +300,19 @@
                 const activeEl = document.getElementById(`lyric-${newActiveIndex}`);
                 if (activeEl) {
                     activeEl.classList.add('active');
-                    // Scroll active lyric to center
-                    const containerRect = lyricsContainer.getBoundingClientRect();
+                    const containerRect = lyricsListContainer.getBoundingClientRect();
                     const elRect = activeEl.getBoundingClientRect();
-                    const scrollTop = lyricsContainer.scrollTop + (elRect.top - containerRect.top) - (containerRect.height / 2) + (elRect.height / 2);
-                    lyricsContainer.scrollTo(0, scrollTop);
+                    const offset = elRect.top - containerRect.top + lyricsListContainer.scrollTop - (containerRect.height / 2) + (elRect.height / 2);
+                    lyricsListContainer.scrollTo({ top: offset, behavior: 'smooth' });
                 }
                 currentLyricIndex = newActiveIndex;
             }
         }
         
         function updateUI() {
-            playPauseIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+            const iconClass = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+            playPauseIcon.className = iconClass;
+            playPauseIconLyrics.className = iconClass;
         }
 
         function formatTime(seconds) {
@@ -225,8 +323,32 @@
 
         function resetPlayer() {
             hasStarted = false;
-            player.seekTo(songLyrics[0].time, true);
+            player.seekTo(0, true);
             player.pauseVideo();
+            currentLyricIndex = -1;
+            document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
+            lyricsListContainer.scrollTo({ top: 0, behavior: 'smooth' });
+            updateUI();
+        }
+
+        function showLyricsView() {
+            playerView.style.opacity = '0';
+            playerView.style.pointerEvents = 'none';
+            playerView.style.transform = 'translateY(-2rem)';
+
+            lyricsView.style.opacity = '1';
+            lyricsView.style.pointerEvents = 'auto';
+            lyricsView.style.transform = 'translateY(0)';
+        }
+
+        function hideLyricsView() {
+            playerView.style.opacity = '1';
+            playerView.style.pointerEvents = 'auto';
+            playerView.style.transform = 'translateY(0)';
+
+            lyricsView.style.opacity = '0';
+            lyricsView.style.pointerEvents = 'none';
+            lyricsView.style.transform = 'translateY(2rem)';
         }
     </script>
 </body>
