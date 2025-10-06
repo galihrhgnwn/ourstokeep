@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Ours to Keep - Kendis</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,13 +11,18 @@
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <style>
+        /* Menggunakan tinggi viewport dinamis untuk mencegah masalah layout di mobile */
+        :root {
+            --vh: 1dvh;
+        }
+        html, body {
+            overscroll-behavior: none; /* Mencegah pull-to-refresh */
+        }
         body {
             font-family: 'Poppins', sans-serif;
             overflow: hidden;
             color: #e5e7eb; /* gray-200 */
-            /* Gradasi latar belakang yang mirip dengan di foto */
             background: radial-gradient(circle, rgba(109, 69, 114, 0.8) 0%, rgba(44, 33, 54, 1) 100%);
-            overscroll-behavior: none; /* Mencegah pull-to-refresh */
         }
         
         /* Menyembunyikan scrollbar di semua elemen */
@@ -53,23 +58,31 @@
         /* Transisi untuk View Switching */
         .view {
             transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+            /* Menambahkan padding untuk area aman (notch, home bar, dll) */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            height: calc(var(--vh, 1dvh) * 100);
         }
     </style>
 </head>
 <body class="bg-gray-900">
 
-    <!-- Container Utama untuk View Switching -->
-    <div class="relative h-screen w-screen overflow-hidden">
+    <!-- Container Utama untuk View Switching dan adaptasi Desktop -->
+    <div class="relative h-screen w-screen overflow-hidden md:flex md:items-center md:justify-center">
+      <div id="app-container" class="relative w-full h-full md:max-w-sm md:h-[90vh] md:rounded-2xl md:shadow-2xl md:overflow-hidden">
 
         <!-- Player View (Tampilan Awal) -->
-        <div id="player-view" class="view absolute inset-0 flex flex-col p-6 space-y-6 opacity-100 transform-none">
+        <div id="player-view" class="view absolute inset-0 flex flex-col p-6 space-y-4 opacity-100 transform-none">
+            <!-- Bagian atas yang fleksibel (Cover & Judul) -->
             <div class="flex-grow flex flex-col items-center justify-center space-y-8">
-                <img src="https://placehold.co/600x600/2c2136/e5e7eb?text=Ours+to+Keep&font=poppins" alt="Album Art" class="w-full max-w-xs rounded-xl shadow-2xl">
+                <img src="https://placehold.co/600x600/2c2136/e5e7eb?text=Ours+to+Keep&font=poppins" alt="Album Art" class="w-full max-w-[280px] sm:max-w-xs rounded-xl shadow-2xl">
                 
-                <div class="w-full max-w-xs text-left">
+                <div class="w-full max-w-[280px] sm:max-w-xs text-left">
                     <div class="flex justify-between items-center">
                         <div>
-                            <h1 class="font-bold text-white text-2xl">Ours to Keep</h1>
+                            <h1 class="font-bold text-white text-2xl truncate">Ours to Keep</h1>
                             <p class="text-md text-gray-300">Kendis</p>
                         </div>
                         <div class="flex items-center space-x-4 text-xl text-gray-300">
@@ -80,6 +93,7 @@
                 </div>
             </div>
 
+            <!-- Bagian bawah yang statis (Kontrol) -->
             <div class="flex-shrink-0">
                  <!-- Progress Bar & Waktu -->
                 <div class="space-y-1">
@@ -114,7 +128,7 @@
                 <div class="flex items-center space-x-3">
                     <img src="https://placehold.co/80x80/2c2136/e5e7eb?text=OK" alt="Album Mini" class="w-12 h-12 rounded-lg shadow-md">
                     <div>
-                        <h2 class="font-bold text-white text-md">Ours to Keep</h2>
+                        <h2 class="font-bold text-white text-md truncate">Ours to Keep</h2>
                         <p class="text-xs text-gray-400">Kendis</p>
                     </div>
                 </div>
@@ -123,7 +137,7 @@
             
             <main id="lyrics-list-container" class="flex-grow overflow-y-auto pt-[30vh] pb-[30vh]">
                 <div id="lyrics-list" class="flex flex-col items-center justify-center space-y-8 text-3xl md:text-4xl text-center">
-                    <!-- Lirik akan dimasukkan di sini -->
+                    <!-- Lirik akan dimasukkan di sini oleh JS -->
                 </div>
             </main>
             
@@ -138,6 +152,7 @@
                 </div>
             </div>
         </div>
+      </div>
     </div>
     
     <!-- Hidden YouTube Player -->
@@ -147,18 +162,12 @@
         // --- Referensi Elemen DOM ---
         const playerView = document.getElementById('player-view');
         const lyricsView = document.getElementById('lyrics-view');
-        
-        // Tombol di Player View
         const playPauseButton = document.getElementById('playPauseButton');
         const playPauseIcon = document.getElementById('playPauseIcon');
         const showLyricsButton = document.getElementById('showLyricsButton');
-
-        // Tombol di Lyrics View
         const playPauseButtonLyrics = document.getElementById('playPauseButtonLyrics');
         const playPauseIconLyrics = document.getElementById('playPauseIconLyrics');
         const hideLyricsButton = document.getElementById('hideLyricsButton');
-
-        // Elemen Umum
         const lyricsList = document.getElementById('lyrics-list');
         const lyricsListContainer = document.getElementById('lyrics-list-container');
         const progressBar = document.getElementById('progressBar');
@@ -169,7 +178,7 @@
         // --- Variabel State ---
         let player, isPlaying = false, hasStarted = false, currentLyricIndex = -1, syncInterval;
         
-        // --- Lirik Lengkap dengan Timestamp (Diperbarui sesuai permintaan) ---
+        // --- Lirik Lengkap dengan Timestamp ---
         const songLyrics = [
             { text: "How are you in your time alone?", time: 10.55 },
             { text: "I'm doing fine, well, I'm not", time: 14.29 },
@@ -253,22 +262,16 @@
         // --- Event Listeners ---
         playPauseButton.addEventListener('click', togglePlayPause);
         playPauseButtonLyrics.addEventListener('click', togglePlayPause);
-        progressBar.addEventListener('input', handleProgressBarChange);
-        progressBarLyrics.addEventListener('input', handleProgressBarChange);
+        progressBar.addEventListener('input', (e) => player.seekTo(e.target.value, true));
+        progressBarLyrics.addEventListener('input', (e) => player.seekTo(e.target.value, true));
         showLyricsButton.addEventListener('click', showLyricsView);
         hideLyricsButton.addEventListener('click', hideLyricsView);
         
         // --- Fungsi-fungsi Utama ---
         function togglePlayPause() {
             if (!player) return;
-            if (!hasStarted) {
-                hasStarted = true;
-            }
+            if (!hasStarted) hasStarted = true;
             isPlaying ? player.pauseVideo() : player.playVideo();
-        }
-
-        function handleProgressBarChange(e) {
-            player.seekTo(e.target.value, true);
         }
 
         function populateLyrics() {
@@ -280,10 +283,8 @@
         function syncLyricsAndProgress() {
             if (!player || typeof player.getCurrentTime !== 'function') return;
             const currentTime = player.getCurrentTime();
-            // Update progress bars
             progressBar.value = currentTime;
             progressBarLyrics.value = currentTime;
-            // Update time display
             currentTimeEl.textContent = formatTime(currentTime);
 
             let newActiveIndex = -1;
@@ -316,6 +317,7 @@
         }
 
         function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
             const min = Math.floor(seconds / 60);
             const sec = Math.floor(seconds % 60).toString().padStart(2, '0');
             return `${min}:${sec}`;
@@ -323,12 +325,11 @@
 
         function resetPlayer() {
             hasStarted = false;
-            player.seekTo(0, true);
-            player.pauseVideo();
+            if(player) player.seekTo(0, true);
+            if(player) player.pauseVideo();
             currentLyricIndex = -1;
             document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
             lyricsListContainer.scrollTo({ top: 0, behavior: 'smooth' });
-            updateUI();
         }
 
         function showLyricsView() {
