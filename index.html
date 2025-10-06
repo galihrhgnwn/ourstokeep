@@ -22,6 +22,7 @@
             font-family: 'Poppins', sans-serif;
             overflow: hidden;
             color: #e5e7eb; /* gray-200 */
+            /* Gradasi latar belakang yang akan ditimpa oleh blurred-background */
             background: radial-gradient(circle, rgba(109, 69, 114, 0.8) 0%, rgba(44, 33, 54, 1) 100%);
         }
         
@@ -49,10 +50,10 @@
         }
         .lyric-line.active {
             opacity: 1;
-            transform: scale(1);
+            transform: scale(1.05) translateY(-5px); /* Lebih menonjol */
             font-weight: 700;
             color: #ffffff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 30px rgba(255, 255, 255, 0.3); /* Efek cahaya */
         }
 
         /* Transisi untuk View Switching */
@@ -65,9 +66,59 @@
             padding-right: env(safe-area-inset-right);
             height: calc(var(--vh, 1dvh) * 100);
         }
+
+        /* Animated Blurred Background */
+        .blurred-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://img.youtube.com/vi/PwrrwedlD0M/maxresdefault.jpg'); /* Thumbnail dari YouTube */
+            background-size: cover;
+            background-position: center;
+            filter: blur(80px); /* Blur sangat kuat */
+            transform: scale(1.1); /* Sedikit diperbesar untuk menutupi tepi setelah blur */
+            animation: background-motion 30s infinite alternate ease-in-out; /* Animasi gerak halus */
+            z-index: -1; /* Posisikan di bawah konten utama */
+        }
+
+        @keyframes background-motion {
+            0% {
+                transform: scale(1.1) translate(0, 0);
+            }
+            50% {
+                transform: scale(1.15) translate(5%, 5%);
+            }
+            100% {
+                transform: scale(1.1) translate(0, 0);
+            }
+        }
+
+        /* Aturan khusus untuk desktop */
+        @media (min-width: 768px) {
+            #app-container {
+                max-width: 380px; /* Lebar maksimum untuk tampilan desktop */
+                height: 700px; /* Tinggi tetap untuk tampilan desktop */
+                border-radius: 2rem; /* Sudut membulat */
+                overflow: hidden;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+                position: relative; /* Pastikan konten di dalamnya relatif terhadap container ini */
+            }
+             .view {
+                padding-top: 1.5rem; /* Padding standar untuk desktop */
+                padding-bottom: 1.5rem;
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+                height: 100%; /* Mengisi tinggi container parent */
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-900">
+
+    <!-- Animated Blurred Background -->
+    <div class="blurred-background"></div>
 
     <!-- Container Utama untuk View Switching dan adaptasi Desktop -->
     <div class="relative h-screen w-screen overflow-hidden md:flex md:items-center md:justify-center">
@@ -77,7 +128,8 @@
         <div id="player-view" class="view absolute inset-0 flex flex-col p-6 space-y-4 opacity-100 transform-none">
             <!-- Bagian atas yang fleksibel (Cover & Judul) -->
             <div class="flex-grow flex flex-col items-center justify-center space-y-8">
-                <img src="https://placehold.co/600x600/2c2136/e5e7eb?text=Ours+to+Keep&font=poppins" alt="Album Art" class="w-full max-w-[280px] sm:max-w-xs rounded-xl shadow-2xl">
+                <!-- Menggunakan thumbnail YouTube asli -->
+                <img src="https://img.youtube.com/vi/PwrrwedlD0M/maxresdefault.jpg" alt="Album Art Ours to Keep" class="w-full max-w-[280px] sm:max-w-xs rounded-xl shadow-2xl">
                 
                 <div class="w-full max-w-[280px] sm:max-w-xs text-left">
                     <div class="flex justify-between items-center">
@@ -126,7 +178,8 @@
         <div id="lyrics-view" class="view absolute inset-0 flex flex-col p-6 space-y-4 opacity-0 pointer-events-none transform translate-y-8">
             <div class="flex-shrink-0 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <img src="https://placehold.co/80x80/2c2136/e5e7eb?text=OK" alt="Album Mini" class="w-12 h-12 rounded-lg shadow-md">
+                    <!-- Menggunakan thumbnail YouTube asli -->
+                    <img src="https://img.youtube.com/vi/PwrrwedlD0M/hqdefault.jpg" alt="Album Mini Ours to Keep" class="w-12 h-12 rounded-lg shadow-md">
                     <div>
                         <h2 class="font-bold text-white text-md truncate">Ours to Keep</h2>
                         <p class="text-xs text-gray-400">Kendis</p>
@@ -174,6 +227,7 @@
         const progressBarLyrics = document.getElementById('progressBarLyrics');
         const currentTimeEl = document.getElementById('currentTime');
         const totalDurationEl = document.getElementById('totalDuration');
+        const appContainer = document.getElementById('app-container');
 
         // --- Variabel State ---
         let player, isPlaying = false, hasStarted = false, currentLyricIndex = -1, syncInterval;
@@ -303,6 +357,7 @@
                     activeEl.classList.add('active');
                     const containerRect = lyricsListContainer.getBoundingClientRect();
                     const elRect = activeEl.getBoundingClientRect();
+                    // Sesuaikan scroll position agar lirik aktif selalu di tengah
                     const offset = elRect.top - containerRect.top + lyricsListContainer.scrollTop - (containerRect.height / 2) + (elRect.height / 2);
                     lyricsListContainer.scrollTo({ top: offset, behavior: 'smooth' });
                 }
@@ -330,6 +385,7 @@
             currentLyricIndex = -1;
             document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
             lyricsListContainer.scrollTo({ top: 0, behavior: 'smooth' });
+            updateUI(); // Memastikan tombol play/pause kembali ke play
         }
 
         function showLyricsView() {
@@ -351,6 +407,14 @@
             lyricsView.style.pointerEvents = 'none';
             lyricsView.style.transform = 'translateY(2rem)';
         }
+
+        // Update --vh custom property on resize (for better mobile compatibility)
+        function setVhProperty() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        window.addEventListener('resize', setVhProperty);
+        setVhProperty(); // Initial call
     </script>
 </body>
 </html>
