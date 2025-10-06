@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ours to Keep - Kendis</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <style>
+        /* Menggunakan tinggi viewport dinamis untuk mencegah masalah layout di mobile */
+        :root {
+            --vh: 1dvh;
+        }
+        html, body {
+            overscroll-behavior: none; /* Mencegah pull-to-refresh */
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            color: #e5e7eb; /* gray-200 */
+            /* Gradasi latar belakang yang akan ditimpa oleh blurred-background */
+            background: radial-gradient(circle, rgba(109, 69, 114, 0.8) 0%, rgba(44, 33, 54, 1) 100%);
+        }
+        
+        /* Menyembunyikan scrollbar di semua elemen */
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Custom Range Slider (Progress Bar) */
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 4px; background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px; outline: none; transition: all 0.2s; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 14px; height: 14px; background: #fff; border-radius: 50%;
+        }
+
+        /* Gaya Lirik */
+        .lyric-line {
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            opacity: 0.4;
+            transform: scale(0.98);
+            font-weight: 600;
+        }
+        .lyric-line.active {
+            opacity: 1;
+            transform: scale(1.05) translateY(-5px); /* Lebih menonjol */
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 30px rgba(255, 255, 255, 0.3); /* Efek cahaya */
+        }
+
+        /* Transisi untuk View Switching */
+        .view {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+            /* Menambahkan padding untuk area aman (notch, home bar, dll) */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            height: calc(var(--vh, 1dvh) * 100);
+        }
+
+        /* Animated Blurred Background */
+        .blurred-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://img.youtube.com/vi/PwrrwedlD0M/maxresdefault.jpg'); /* Thumbnail dari YouTube */
+            background-size: cover;
+            background-position: center;
+            filter: blur(80px); /* Blur sangat kuat */
+            transform: scale(1.1); /* Sedikit diperbesar untuk menutupi tepi setelah blur */
+            animation: background-motion 30s infinite alternate ease-in-out; /* Animasi gerak halus */
+            z-index: -1; /* Posisikan di bawah konten utama */
+        }
+
+        @keyframes background-motion {
+            0% {
+                transform: scale(1.1) translate(0, 0);
+            }
+            50% {
+                transform: scale(1.15) translate(5%, 5%);
+            }
+            100% {
+                transform: scale(1.1) translate(0, 0);
+            }
+        }
+
+        /* Aturan khusus untuk desktop */
+        @media (min-width: 768px) {
+            #app-container {
+                max-width: 380px; /* Lebar maksimum untuk tampilan desktop */
+                height: 700px; /* Tinggi tetap untuk tampilan desktop */
+                border-radius: 2rem; /* Sudut membulat */
+                overflow: hidden;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+                position: relative; /* Pastikan konten di dalamnya relatif terhadap container ini */
+            }
+             .view {
+                padding-top: 1.5rem; /* Padding standar untuk desktop */
+                padding-bottom: 1.5rem;
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+                height: 100%; /* Mengisi tinggi container parent */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+
+    <!-- Animated Blurred Background -->
+    <div class="blurred-background"></div>
+
+    <!-- Container Utama untuk View Switching dan adaptasi Desktop -->
+    <div class="relative h-screen w-screen overflow-hidden md:flex md:items-center md:justify-center">
+      <div id="app-container" class="relative w-full h-full md:max-w-sm md:h-[90vh] md:rounded-2xl md:shadow-2xl md:overflow-hidden">
+
+        <!-- Player View (Tampilan Awal) -->
+        <div id="player-view" class="view absolute inset-0 flex flex-col p-6 space-y-4 opacity-100 transform-none">
+            <!-- Bagian atas yang fleksibel (Cover & Judul) -->
+            <div class="flex-grow flex flex-col items-center justify-center space-y-8">
+                <!-- Menggunakan thumbnail YouTube asli -->
+                <img src="https://img.youtube.com/vi/PwrrwedlD0M/maxresdefault.jpg" alt="Album Art Ours to Keep" class="w-full max-w-[280px] sm:max-w-xs rounded-xl shadow-2xl">
+                
+                <div class="w-full max-w-[280px] sm:max-w-xs text-left">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h1 class="font-bold text-white text-2xl truncate">Ours to Keep</h1>
+                            <p class="text-md text-gray-300">Kendis</p>
+                        </div>
+                        <div class="flex items-center space-x-4 text-xl text-gray-300">
+                            <i class="far fa-star"></i>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian bawah yang statis (Kontrol) -->
+            <div class="flex-shrink-0">
+                 <!-- Progress Bar & Waktu -->
+                <div class="space-y-1">
+                    <input type="range" id="progressBar" value="0" min="0">
+                    <div class="flex justify-between text-xs font-mono text-gray-400">
+                        <span id="currentTime">0:00</span>
+                        <span id="totalDuration">-:--</span>
+                    </div>
+                </div>
+
+                <!-- Tombol Kontrol Utama -->
+                <div class="flex items-center justify-around my-4">
+                    <button class="text-gray-300 hover:text-white text-2xl transition-colors"><i class="fas fa-backward-step"></i></button>
+                    <button id="playPauseButton" class="text-white w-20 h-20 rounded-full flex items-center justify-center text-4xl">
+                        <i id="playPauseIcon" class="fas fa-play"></i>
+                    </button>
+                    <button class="text-gray-300 hover:text-white text-2xl transition-colors"><i class="fas fa-forward-step"></i></button>
+                </div>
+                
+                <!-- Tombol Kontrol Sekunder -->
+                <div class="flex items-center justify-around text-xl text-gray-400">
+                     <button id="showLyricsButton" class="hover:text-white transition-colors"><i class="fas fa-comment-alt"></i></button>
+                     <button class="hover:text-white transition-colors"><i class="fas fa-podcast"></i></button>
+                     <button class="hover:text-white transition-colors"><i class="fas fa-list-ul"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lyrics View (Tampilan Lirik) -->
+        <div id="lyrics-view" class="view absolute inset-0 flex flex-col p-6 space-y-4 opacity-0 pointer-events-none transform translate-y-8">
+            <div class="flex-shrink-0 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <!-- Menggunakan thumbnail YouTube asli -->
+                    <img src="https://img.youtube.com/vi/PwrrwedlD0M/hqdefault.jpg" alt="Album Mini Ours to Keep" class="w-12 h-12 rounded-lg shadow-md">
+                    <div>
+                        <h2 class="font-bold text-white text-md truncate">Ours to Keep</h2>
+                        <p class="text-xs text-gray-400">Kendis</p>
+                    </div>
+                </div>
+                <button id="hideLyricsButton" class="text-gray-300 text-2xl"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            
+            <main id="lyrics-list-container" class="flex-grow overflow-y-auto pt-[30vh] pb-[30vh]">
+                <div id="lyrics-list" class="flex flex-col items-center justify-center space-y-8 text-3xl md:text-4xl text-center">
+                    <!-- Lirik akan dimasukkan di sini oleh JS -->
+                </div>
+            </main>
+            
+            <div class="flex-shrink-0">
+                <input type="range" id="progressBarLyrics" value="0" min="0" class="w-full mt-3">
+                <div class="flex items-center justify-around my-4">
+                    <button class="text-gray-300 hover:text-white text-2xl transition-colors"><i class="fas fa-backward-step"></i></button>
+                    <button id="playPauseButtonLyrics" class="text-white w-20 h-20 rounded-full flex items-center justify-center text-4xl">
+                        <i id="playPauseIconLyrics" class="fas fa-play"></i>
+                    </button>
+                    <button class="text-gray-300 hover:text-white text-2xl transition-colors"><i class="fas fa-forward-step"></i></button>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Hidden YouTube Player -->
+    <div id="player" class="hidden"></div>
+
+    <script>
+        // --- Referensi Elemen DOM ---
+        const playerView = document.getElementById('player-view');
+        const lyricsView = document.getElementById('lyrics-view');
+        const playPauseButton = document.getElementById('playPauseButton');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        const showLyricsButton = document.getElementById('showLyricsButton');
+        const playPauseButtonLyrics = document.getElementById('playPauseButtonLyrics');
+        const playPauseIconLyrics = document.getElementById('playPauseIconLyrics');
+        const hideLyricsButton = document.getElementById('hideLyricsButton');
+        const lyricsList = document.getElementById('lyrics-list');
+        const lyricsListContainer = document.getElementById('lyrics-list-container');
+        const progressBar = document.getElementById('progressBar');
+        const progressBarLyrics = document.getElementById('progressBarLyrics');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalDurationEl = document.getElementById('totalDuration');
+        const appContainer = document.getElementById('app-container');
+
+        // --- Variabel State ---
+        let player, isPlaying = false, hasStarted = false, currentLyricIndex = -1, syncInterval;
+        
+        // --- Lirik Lengkap dengan Timestamp ---
+        const songLyrics = [
+            { text: "How are you in your time alone?", time: 10.55 },
+            { text: "I'm doing fine, well, I'm not", time: 14.29 },
+            { text: "I feel like I wanna die", time: 17.72 },
+            { text: "I have so much to tell you, love", time: 20.42 },
+            { text: "From the start of the day", time: 25.30 },
+            { text: "'Til the the dawn breaks away", time: 28.29 },
+            { text: "I've been thinking of you", time: 30.91 },
+            { text: "And I've been missing your voice on the other side", time: 35.45 },
+            { text: "And I've been dreaming of you", time: 40.74 },
+            { text: "And I can hear you singing through the silent night", time: 45.90 },
+            { text: "Do you ever feel the need to get away from me?", time: 52.66 },
+            { text: "Do I bore you?", time: 59.08 },
+            { text: "Or do you want to", time: 61.00 },
+            { text: "Take me from this crowded place to", time: 63.42 },
+            { text: "Somewhere we can find some peace", time: 67.41 },
+            { text: "And the world is ours to keep, mm", time: 71.11 },
+            { text: "They don't have to know how we touch", time: 84.86 },
+            { text: "'Cause this feeling's all ours", time: 88.69 },
+            { text: "And they'd become so loud trying to", time: 91.75 },
+            { text: "Fix what was never really broken", time: 95.35 },
+            { text: "And you are my safe haven", time: 99.49 },
+            { text: "I am on your side", time: 101.78 },
+            { text: "Do you ever feel the need to get away from me?", time: 105.77 },
+            { text: "Do I bore you?", time: 112.29 },
+            { text: "Or do you want to", time: 114.50 },
+            { text: "Take me from this crowded place to", time: 116.94 },
+            { text: "Somewhere we can find some peace", time: 120.77 },
+            { text: "And the world is ours to keep, mm", time: 124.18 },
+            { text: "In this world, we are fading away", time: 137.68 },
+            { text: "And I'm not fine", time: 141.93 },
+            { text: "Sometimes, it gets so lonely", time: 143.50 },
+            { text: "And I'm still scared to ask for help", time: 145.58 },
+            { text: "But I'll look at you the same as today", time: 148.31 },
+            { text: "The one that I've been needing", time: 153.16 },
+            { text: "I never thought I'd have", time: 155.50 },
+            { text: "I've been thinking of you", time: 157.78 },
+            { text: "And I've been missing your voice on the other side", time: 162.55 },
+            { text: "Do you ever feel the need to get away from me? (I've been missing you)", time: 168.98 },
+            { text: "Do I bore you? (Voice on the other side)", time: 175.00 },
+            { text: "Or do you want to", time: 177.00 },
+            { text: "Take me from this crowded place to (I've been dreaming of you)", time: 179.00 },
+            { text: "Somewhere we can find some peace (and I can hear you singing)", time: 183.00 },
+            { text: "And the world is ours to keep (through the silent night)", time: 187.00 }
+        ];
+
+        // --- Inisialisasi YouTube Player API ---
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        window.onYouTubeIframeAPIReady = function() {
+            player = new YT.Player('player', {
+                videoId: 'PwrrwedlD0M',
+                playerVars: { 'playsinline': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 'iv_load_policy': 3, 'modestbranding': 1, 'rel': 0, 'showinfo': 0 },
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+            });
+        }
+        
+        function onPlayerReady() {
+            populateLyrics();
+            const duration = player.getDuration();
+            progressBar.max = duration;
+            progressBarLyrics.max = duration;
+            totalDurationEl.textContent = formatTime(duration);
+        }
+        
+        function onPlayerStateChange(event) {
+            isPlaying = (event.data === YT.PlayerState.PLAYING);
+            updateUI();
+            if (isPlaying) {
+                if (!syncInterval) syncInterval = setInterval(syncLyricsAndProgress, 200);
+            } else {
+                clearInterval(syncInterval);
+                syncInterval = null;
+                if (event.data === YT.PlayerState.ENDED) resetPlayer();
+            }
+        }
+        
+        // --- Event Listeners ---
+        playPauseButton.addEventListener('click', togglePlayPause);
+        playPauseButtonLyrics.addEventListener('click', togglePlayPause);
+        progressBar.addEventListener('input', (e) => player.seekTo(e.target.value, true));
+        progressBarLyrics.addEventListener('input', (e) => player.seekTo(e.target.value, true));
+        showLyricsButton.addEventListener('click', showLyricsView);
+        hideLyricsButton.addEventListener('click', hideLyricsView);
+        
+        // --- Fungsi-fungsi Utama ---
+        function togglePlayPause() {
+            if (!player) return;
+            if (!hasStarted) hasStarted = true;
+            isPlaying ? player.pauseVideo() : player.playVideo();
+        }
+
+        function populateLyrics() {
+            lyricsList.innerHTML = songLyrics.map((lyric, index) =>
+                `<p class="lyric-line" id="lyric-${index}">${lyric.text}</p>`
+            ).join('');
+        }
+        
+        function syncLyricsAndProgress() {
+            if (!player || typeof player.getCurrentTime !== 'function') return;
+            const currentTime = player.getCurrentTime();
+            progressBar.value = currentTime;
+            progressBarLyrics.value = currentTime;
+            currentTimeEl.textContent = formatTime(currentTime);
+
+            let newActiveIndex = -1;
+            for (let i = 0; i < songLyrics.length; i++) {
+                if (currentTime >= songLyrics[i].time - 0.5) { 
+                    newActiveIndex = i;
+                } else {
+                    break;
+                }
+            }
+
+            if (newActiveIndex !== currentLyricIndex) {
+                document.getElementById(`lyric-${currentLyricIndex}`)?.classList.remove('active');
+                const activeEl = document.getElementById(`lyric-${newActiveIndex}`);
+                if (activeEl) {
+                    activeEl.classList.add('active');
+                    const containerRect = lyricsListContainer.getBoundingClientRect();
+                    const elRect = activeEl.getBoundingClientRect();
+                    // Sesuaikan scroll position agar lirik aktif selalu di tengah
+                    const offset = elRect.top - containerRect.top + lyricsListContainer.scrollTop - (containerRect.height / 2) + (elRect.height / 2);
+                    lyricsListContainer.scrollTo({ top: offset, behavior: 'smooth' });
+                }
+                currentLyricIndex = newActiveIndex;
+            }
+        }
+        
+        function updateUI() {
+            const iconClass = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+            playPauseIcon.className = iconClass;
+            playPauseIconLyrics.className = iconClass;
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${min}:${sec}`;
+        }
+
+        function resetPlayer() {
+            hasStarted = false;
+            if(player) player.seekTo(0, true);
+            if(player) player.pauseVideo();
+            currentLyricIndex = -1;
+            document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
+            lyricsListContainer.scrollTo({ top: 0, behavior: 'smooth' });
+            updateUI(); // Memastikan tombol play/pause kembali ke play
+        }
+
+        function showLyricsView() {
+            playerView.style.opacity = '0';
+            playerView.style.pointerEvents = 'none';
+            playerView.style.transform = 'translateY(-2rem)';
+
+            lyricsView.style.opacity = '1';
+            lyricsView.style.pointerEvents = 'auto';
+            lyricsView.style.transform = 'translateY(0)';
+        }
+
+        function hideLyricsView() {
+            playerView.style.opacity = '1';
+            playerView.style.pointerEvents = 'auto';
+            playerView.style.transform = 'translateY(0)';
+
+            lyricsView.style.opacity = '0';
+            lyricsView.style.pointerEvents = 'none';
+            lyricsView.style.transform = 'translateY(2rem)';
+        }
+
+        // Update --vh custom property on resize (for better mobile compatibility)
+        function setVhProperty() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        window.addEventListener('resize', setVhProperty);
+        setVhProperty(); // Initial call
+    </script>
+</body>
+</html>
+
+
